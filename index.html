@@ -26,56 +26,57 @@
     <tbody id="corpo-tabela"></tbody>
   </table>
 
-  <script>
-    async function carregarDados() {
-      const url = 'https://opensheet.elk.sh/1rL_fHQxLzoIEYoEvP9c04rbBTXsREkm4DtWA8zBWEvI/Página1';
+<script>
+  async function carregarDados() {
+    const url = 'https://opensheet.elk.sh/1rL_fHQxLzoIEYoEvP9c04rbBTXsREkm4DtWA8zBWEvI/Página1';
 
-      try {
-        const resposta = await fetch(url);
-        if (!resposta.ok) {
-          throw new Error(`Erro ao acessar planilha: ${resposta.status}`);
-        }
-
-        const dados = await resposta.json();
-
-        if (!Array.isArray(dados)) {
-          throw new TypeError('Os dados recebidos não estão em formato de array.');
-        }
-
-        const tabela = document.getElementById('tabela-dados');
-        const cabecalho = document.getElementById('cabecalho');
-        const corpo = document.getElementById('corpo-tabela');
-
-        // Gera o cabeçalho com base na primeira linha de dados
-        const colunas = Object.keys(dados[0]);
-        colunas.forEach(coluna => {
-          const th = document.createElement('th');
-          th.textContent = coluna;
-          cabecalho.appendChild(th);
-        });
-		
-		// 🔄 LIMPAR o cabeçalho da tabela antes de popular novamente e evita duplicidade.
-		cabecalho.innerHTML = '';
-		corpo.innerHTML = '';
-
-        // Gera as linhas da tabela
-        dados.forEach(linha => {
-          const tr = document.createElement('tr');
-          colunas.forEach(coluna => {
-            const td = document.createElement('td');
-            td.textContent = linha[coluna] || '';
-            tr.appendChild(td);
-          });
-          corpo.appendChild(tr);
-        });
-
-      } catch (erro) {
-        console.error('Erro ao carregar dados:', erro);
+    try {
+      const resposta = await fetch(url);
+      if (!resposta.ok) {
+        throw new Error(`Erro ao acessar planilha: ${resposta.status}`);
       }
-    }
 
-    carregarDados();
-	setInterval(carregarDados, 60000); // atualiza a cada 60 segundos
-  </script>
+      const dados = await resposta.json();
+
+      if (!Array.isArray(dados)) {
+        throw new TypeError('Os dados recebidos não estão em formato de array.');
+      }
+
+      const tabela = document.getElementById('tabela-dados');
+      const cabecalho = document.getElementById('cabecalho');
+      const corpo = document.getElementById('corpo-tabela');
+
+      // 🔄 Limpar antes de adicionar novamente
+      cabecalho.innerHTML = '';
+      corpo.innerHTML = '';
+
+      // Gera o cabeçalho dinamicamente
+      const colunas = Object.keys(dados[0]);
+      colunas.forEach(coluna => {
+        const th = document.createElement('th');
+        th.textContent = coluna;
+        cabecalho.appendChild(th);
+      });
+
+      // Gera as linhas da tabela
+      dados.forEach(linha => {
+        const tr = document.createElement('tr');
+        colunas.forEach(coluna => {
+          const td = document.createElement('td');
+          td.textContent = linha[coluna] || '';
+          tr.appendChild(td);
+        });
+        corpo.appendChild(tr);
+      });
+
+    } catch (erro) {
+      console.error('Erro ao carregar dados:', erro);
+    }
+  }
+
+  carregarDados();
+  setInterval(carregarDados, 60000); // Atualiza a cada 60s
+</script>
+	
 </body>
 </html>
