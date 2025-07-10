@@ -2,30 +2,416 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Dados da Planilha</title>
+  <title>dfs contabil</title>
   <style>
-    table {
-      border-collapse: collapse;
-      width: 50%;
-    }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 8px;
-    }
-    th {
-      background-color: #f2f2f2;
-    }
+    	/* 🌞 Tema claro: define variáveis de cor padrão */
+	:root {
+		--bg: #ffffff;                   /* Fundo branco */
+		--text: #000000;                /* Texto preto */
+		--border: #ccc;                 /* Bordas claras */
+		--primary: #0077cc;             /* Azul principal */
+		/*--accent: #f0f0f0;*/              /* Fundo do menu */
+		--shadow: rgba(0, 0, 0, 0.1);   /* Sombra leve com transparência*/
+		--button-bg: rgba(0, 0, 0, 0.5);           /* Fundo do botão com transparência */
+		--button-text: #cccccc;         /* Texto dos botões (claro) */
+		--button-font: 'Roboto', sans-serif;
+		--hover-bg-light: rgba(238, 238, 238, 0.5);      /* Fundo ao passar o mouse (claro) com transparência*/
+		--hover-text-light: #000000;    /* Cor do texto amarelo quando passa o mouse no botão */
+	}
+	
+	
+	/* 🌙 Tema escuro: sobrescreve variáveis */
+	[data-theme="dark"] {
+		--bg: #000000;
+		--text: #ffffff;
+		--border: #444;
+		--primary: #90caf9;
+		/*--accent: #1a1a1a;*/ /* Fundo do menu */
+		--shadow: rgba(51, 51, 51, 0.5); /* Sombra leve com transparência*/
+		--button-bg: rgba(204, 204, 204, 0.5); /* Fundo do botão com transparência */
+		--button-text: #000000; /* Cor do texto do botão */
+		--hover-bg-dark: rgba(34, 34, 34, 0.5); /* Fundo do botão com transparência */
+		--hover-text-dark: #ffeb3b; /* Cor do texto amarelo quando passa o mouse no botão */
+	}
+
+	* {
+		box-sizing: border-box;
+		transition: all 0.3s ease;
+	}
+
+	body {
+		margin: 0;
+		font-family: Arial, sans-serif;
+		background-color: var(--bg);
+		color: var(--text);
+		padding-bottom: 80px; /* Garante que o conteúdo não fique escondido atrás do menu fixo em telas pequenas */
+	}
+
+	.page {
+		width: 100%;
+		max-width: 21cm;
+		min-height: 29.7cm;
+		margin: 2rem auto;
+		padding: 2cm;
+		background: var(--bg);
+		color: var(--text);
+		box-shadow: 0 0 10px var(--shadow);
+		border: 1px solid var(--border);
+	}
+
+	section {
+		padding: 20px;
+		margin: auto;
+	}
+
+	/* 🔧 Menu flutuante fixado no topo por padrão */
+	.floating-menu {
+		position: fixed;
+		top: 20px;
+		left: 20px;
+		transform: none;
+		border-radius: 8px 0 0 8px;
+		padding: 10px;
+		z-index: 1000;
+		overflow: hidden;
+		background-color: var(--accent);
+	}
+
+	#menuToggle {
+		padding: 8px;
+		background-color: var(--button-bg);
+		color: var(--button-text);
+		border: none;
+		border-radius: 4px;
+		cursor: pointer;
+		font-family: var(--button-font);
+		display: flex;
+		align-items: center;
+		gap: 6px;
+	}
+
+	#menuItems {
+		max-height: 0;
+		overflow: hidden;
+		transition: max-height 0.4s ease;
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		margin-top: 10px;
+	}
+
+	#menuItems.show {
+		max-height: 500px;
+	}
+
+	#menuItems a,
+	#menuItems button {
+		padding: 6px 10px;
+		background-color: var(--button-bg);
+		color: var(--button-text);
+		border: none;
+		border-radius: 4px;
+		font-size: 0.9em;
+		cursor: pointer;
+		font-family: var(--button-font);
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		text-decoration: none;
+	}
+
+	/* Hover no tema claro */
+	:root #menuItems a:hover,
+	:root #menuItems button:hover {
+		background-color: var(--hover-bg-light);
+		color: var(--hover-text-light);
+		font-weight: bold;
+	}
+
+	/* Hover no tema escuro */
+	[data-theme="dark"] #menuItems a:hover,
+	[data-theme="dark"] #menuItems button:hover {
+		background-color: var(--hover-bg-dark);
+		color: var(--hover-text-dark);
+		font-weight: bold;
+	}
+
+	/* 📱 Responsividade para telas menores (modo mobile) */
+	@media (max-width: 768px) {
+		.page {
+			padding: 1.2rem;
+			min-height: auto;
+			box-shadow: none;
+		}
+
+		/* 🔻 O menu passa a ficar fixado na parte inferior da tela */
+		.floating-menu {
+			position: fixed;
+			top: auto; /* Remove topo */
+			bottom: 0;
+			left: 0;
+			right: 0;
+			width: 100%;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			background-color: var(--accent); /* Fundo para o menu */
+			border-radius: 0;
+			padding: 10px;
+			box-shadow: 0 -2px 5px var(--shadow); /* Sombra na parte de cima */
+		}
+
+		#menuItems {
+			flex-direction: row;
+			flex-wrap: wrap;
+			justify-content: center;
+			width: 100%;
+			margin-top: 10px;
+		}
+
+		#menuItems a,
+		#menuItems button {
+			margin: 4px;
+			flex: 1 1 auto;
+			text-align: center;
+		}
+	}
+
+	/* 🖨️ Estilos para impressão */
+	@media print {
+		body, html {
+			background: #fff !important;
+			color: #000 !important;
+		}
+
+		.page {
+			background: #fff !important;
+			color: #000 !important;
+			box-shadow: none !important;
+			border: none !important;
+			margin: 0 !important;
+			padding: 0 !important;
+		}
+
+		.floating-menu {
+			display: none !important;
+		}
+		
+		/* Estilos para impressão o texto da seção não passe para outra follha na impressão*/
+		
+		section {
+		break-before: page;
+		}
+		
+	}
+	
+	@media print {
+	  .conteudofolhainiciodemonstracaofinanceira,
+	  .rodapefolhainiciodemonstracaofinanceira {
+		display: block !important;
+		text-align: center;
+		break-inside: avoid;
+	  }
+	}
+
+	#menuToggle.hidden {
+		display: none;
+	}
+	
+	.grupos {
+		text-align: left;
+	}
+	
+	.notas {
+		text-align: center;
+	}
+	
+	.valor{
+		
+	}
+	
+	.cabecalhos{
+		text-align: center;
+		font-size: 12px;
+	}
+	
+	/* Estilos para impressão a linha abaixo do cabeçalho em branco e preto*/
+	
+	.hr-screen {
+		height: 4px;
+		border: none;
+		background: linear-gradient(to bottom, white 50%, black 50%);
+		margin: 10px 0;
+	}
+
+	.hr-print {
+		display: none;
+		height: 4px;
+		border-top: 2px solid black;
+		border-bottom: 2px solid white;
+		margin: 10px 0;
+	}
+
+	@media print {
+		.hr-screen {
+		display: none !important;
+		}
+		.hr-print {
+			display: block !important;
+		}
+	}
+	
+	@media print {
+		hr {
+			-webkit-print-color-adjust: exact;
+			print-color-adjust: exact;
+		}
+	}
+	
+	@media print {
+	  section.page {
+		page-break-inside: avoid;
+		break-inside: avoid; /* Para compatibilidade com diferentes navegadores */
+	  }
+	}	
+	
+	/* Div de assinaturas no final da DF´s */
+	
+	.container {
+		display: flex;
+		justify-content: center;
+		gap: 50px;
+		margin-top: 50px;
+	}
+
+	.card {
+		width: 250px;
+	}
+
+	.topo p {
+		text-align: center;
+		font-weight: bold;
+	}
+
+	.rodape {
+		margin-top: 15px;
+	}
+
+	.rodape p {
+		text-align: center;
+		margin: 0;
+	}
+	
+	.paragrafotitulo {
+		text-align: left;
+		font-weight: bold;
+	}
+	
+	.paragrafonotaexplicativa {
+		text-align: center; 
+		margin-top: 30px; 
+		font-style: italic;
+	}
+	
+	.conteudofolhainiciodemonstracaofinanceira {
+	  display: flex;
+	  flex-direction: column;
+	  justify-content: space-between;
+	  align-items: center;
+	  min-height: 80vh;
+	  box-sizing: border-box;
+	  text-align: center;
+	  flex-grow: 1;
+	}
+
+	.rodapefolhainiciodemonstracaofinanceira {
+	  display: flex;
+	  flex-direction: column;
+	  justify-content: center;
+	  align-items: center;
+	  box-sizing: border-box;
+	  text-align: center;
+	  flex-grow: 1;
+	}
+	
+	.rodapefolhainiciodemonstracaofinanceira {
+	  text-align: center;
+	  padding-top: 1rem;
+	  font-size: 0.9rem;
+	  margin-top: 8rem;   /* Aumenta o espaço acima da imagem */
+	}
+		
+	.logo-tecway {
+	  width: 200px;
+	  height: auto;
+	  margin-top: 12rem;   /* Aumenta o espaço acima da imagem */
+	  margin-bottom: 10rem; /* Espaço abaixo da imagem */
+	}
+	
+	/* Espáço entre a logo e o título h4 */	
+	.conteudofolhainiciodemonstracaofinanceira h4 {
+	  margin-top: 0; /* Evita espaço extra se necessário */
+	}
   </style>
 </head>
 <body>
-  <h1>Dados da Planilha Google</h1>
+    <!-- Menu flutuante com botão recolhível -->
+  <div class="floating-menu">
+    <button id="menuToggle" onclick="toggleMenu()">
+      <i class="fas fa-bars"></i> Menu <!-- Ícone de "menu hamburguer" -->
+    </button>
+
+    <!-- Itens do menu (inicialmente escondidos) -->
+    <div id="menuItems">
+      <a href="#inicio" onclick="hideMenu()"><i class="fas fa-home"></i> Início</a>
+      <a href="#bp" onclick="hideMenu()"><i class="fas fa-balance-scale"></i> BP</a>
+      <a href="#dr" onclick="hideMenu()"><i class="fas fa-file-invoice-dollar"></i> DR</a>
+      <a href="#indices" onclick="hideMenu()"><i class="fas fa-chart-line"></i> Índices</a>
+      <a href="#dmpl" onclick="hideMenu()"><i class="fas fa-exchange-alt"></i> DMPL</a>
+      <a href="#dlpa" onclick="hideMenu()"><i class="fas fa-wallet"></i> DLPA</a>
+      <a href="#dfc" onclick="hideMenu()"><i class="fas fa-cash-register"></i> DFC</a>
+      <a href="#ne1" onclick="hideMenu()"><i class="fas fa-sticky-note"></i> Notas</a>
+      <button onclick="toggleTheme(); hideMenu()"><i class="fas fa-adjust"></i> 🌓 Tema</button>
+      <button onclick="window.print(); hideMenu()"><i class="fas fa-print"></i>🖨️ Imprimir</button>
+    </div>
+  </div>
+
+  <!-- Conteúdo do relatório: Seções em páginas simulando A4 -->
+  
+	<section class="page" id="inicio">
+	  <div class="conteudofolhainiciodemonstracaofinanceira">
+		<img src="./tecwaylog.png" alt="Tecway" class="logo-tecway">
+		<h4>EMPRESA MODELO LTDA.</h4>
+		<p>DEMONSTRAÇÕES FINANCEIRAS</p>
+		<p>30 DE JUNHO DE 2025</p>
+	  </div>
+
+	  <footer class="rodapefolhainiciodemonstracaofinanceira">
+		<p class="paragrafocidade">Manaus/AM.</p>
+	  </footer>
+	</section>
+
+  <section class="page" id="bp" style="font-size: 12px;">
+	<p style="cabecalhos"><strong>Empresa Modelo Ltda.</strong><br> <!-- cabeçalho da página -->
+		Balanços patrimoniais dos exercícios findos em 30 de Junho de 2025.<br>
+		Em milhares de reais (R$)
+	</p>
+  <hr style="height: 4px; border: none; background: linear-gradient(to bottom, white 50%, black 50%); margin: 10px 0;"> <!-- Linha que fica em cima para tema claro e escuro 50% cada -->
   <table id="tabela-dados">
     <thead>
       <tr id="cabecalho"></tr>
     </thead>
     <tbody id="corpo-tabela"></tbody>
   </table>
-
+	<br>
+	<br>
+	<br>
+	<br>
+	<p class="paragrafonotaexplicativa";>
+		As notas explicativas são parte integrante das demonstrações financeiras.
+	</p>
+</section>
 <script>
   async function carregarDados() {
     const url = 'https://opensheet.elk.sh/1rL_fHQxLzoIEYoEvP9c04rbBTXsREkm4DtWA8zBWEvI/Página1';
